@@ -14,11 +14,9 @@ RUN apt-get update \
 
 ARG TEMPO_VERSION=v2.4.1
 WORKDIR /src
-RUN git clone --branch $TEMPO_VERSION --depth 1 https://github.com/grafana/tempo.git .
-
-# Build Tempo
-RUN go mod download
-RUN go build -o /usr/bin/tempo ./cmd/tempo
+RUN git clone --branch $TEMPO_VERSION --depth 1 https://github.com/grafana/tempo.git . \
+ && go mod download \
+ && go build -o /usr/bin/tempo ./cmd/tempo
 
 # ------------------------------------------------------------- [STAGE] FINAL
 FROM gautada/debian:$DEBIAN_VERSION
