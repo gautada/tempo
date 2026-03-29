@@ -32,6 +32,13 @@ COPY --from=build /usr/bin/tempo /usr/bin/tempo
 # Configuration directory
 RUN mkdir -p /etc/tempo /var/tempo
 
+# Version reporting
+COPY scripts/container-version.sh /usr/bin/container-version
+
+# s6 service definition
+COPY services/tempo/run /etc/services.d/tempo/run
+RUN chmod +x /usr/bin/container-version /etc/services.d/tempo/run
+
 # Default user setup (tempo)
 ARG USER=tempo
 RUN /usr/sbin/groupmod -n $USER debian \
@@ -46,7 +53,3 @@ EXPOSE 3200 9095
 USER $USER
 WORKDIR /home/$USER
 
-# Entrypoint setup
-# Typically requires -config.file=/etc/tempo/tempo.yaml
-ENTRYPOINT ["/usr/bin/tempo"]
-CMD ["-config.file=/etc/tempo/tempo.yaml"]
