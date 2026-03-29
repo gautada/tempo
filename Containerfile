@@ -11,9 +11,10 @@ RUN apt-get update \
 ARG TEMPO_VERSION=v2.10.3
 WORKDIR /build
 RUN git config --global advice.detachedHead false \
- && git clone --branch $TEMPO_VERSION --depth 1 https://github.com/grafana/tempo.git .
-RUN go mod download
-RUN go build -o /out/tempo ./cmd/tempo
+ && git clone --branch $TEMPO_VERSION --depth 1 \
+        https://github.com/grafana/tempo.git . \
+ && go mod download \
+ && go build -o /out/tempo ./cmd/tempo
 
 
 FROM gautada/debian:$DEBIAN_TAG as container
