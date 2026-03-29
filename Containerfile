@@ -17,7 +17,7 @@ RUN git config --global advice.detachedHead false \
  && go build -o /out/tempo ./cmd/tempo
 
 
-FROM gautada/debian:$DEBIAN_TAG as container
+FROM gautada/debian:$DEBIAN_VERSION as container
 
 # ╭――――――――――――――――――――╮
 # │ METADATA           │
