@@ -1,0 +1,17 @@
+#!/bin/sh
+# ╭――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╮
+# │ TEMPO - S6 SERVICE SCRIPT                                                │
+# ╰――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
+# This script is an s6 service run script that launches and manages the
+# Tempo server within the container.
+
+APP_USER="tempo"
+CONFIG_FILE="/etc/tempo/tempo.yaml"
+DATA_PATH="/var/tempo"
+
+# Ensure runtime directories exist and have correct ownership.
+mkdir -p "${DATA_PATH}"
+chown -R "${APP_USER}:${APP_USER}" "${DATA_PATH}"
+
+exec s6-setuidgid "${APP_USER}" \
+  /usr/bin/tempo -config.file="${CONFIG_FILE}"
