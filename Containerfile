@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
 ARG BASE_IMAGE=docker.io/gautada/debian:latest
-ARG TEMPO_VERSION=2.4.1
+ARG TEMPO_VERSION=2.10.3
 ARG TARGETARCH=amd64
 
 # ══════════════════════════════════════════════════════════════
 # Stage 1: Build Tempo from source
 # ══════════════════════════════════════════════════════════════
-FROM docker.io/library/golang:1.24-trixie AS builder
+FROM docker.io/library/golang:1.25-trixie AS builder
 
 ARG TEMPO_VERSION
 ARG TARGETARCH
@@ -29,7 +29,7 @@ WORKDIR /build
 RUN git config --global advice.detachedHead false \
  && git clone --depth 1 --branch "v${TEMPO_VERSION}" https://github.com/grafana/tempo.git .
 
-RUN go build -ldflags "-s -w" ./cmd/tempo
+RUN go build -ldflags "-s -w" -o /build/tempo ./cmd/tempo
 
 # ══════════════════════════════════════════════════════════════
 # Stage 2: Final Image
@@ -53,6 +53,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    libcap2-bin \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -74,15 +75,6 @@ RUN /usr/sbin/usermod -l $USER debian \
  && rm -rf /home/debian
 
 # ╭――――――――――――――――――――╮
-# │ CONFIGURATION      │
-# ╰――――――――――――――――――――╯
-# Expecting tempo.yaml to be provided via mount or copy
-# For now, we prepare the symlink if we use the same pattern as grafana
-# COPY tempo.yaml /mnt/volumes/configuration/tempo.yaml
-# RUN ln -fsv /mnt/volumes/configuration/tempo.yaml /etc/tempo/tempo.yaml \
-#  && chown $USER:$USER /etc/tempo/tempo.yaml
-
-# ╭――――――――――――――――――――╮
 # │ VERSION            │
 # ╰――――――――――――――――――――╯
 COPY scripts/container-version.sh /usr/bin/container-version
@@ -100,6 +92,6 @@ RUN chmod +x /etc/container/health.d/tempo-running
 COPY services/tempo/run /etc/services.d/tempo/run
 RUN chmod +x /etc/services.d/tempo/run
 
-# Standard Tempo ports: 3200 (HTTP), 4317 (OTLP gRPC), 4318 (OTLP HTTP)
-EXPOSE 3200 4317 4318
+# Standard Tempo ports: 3200 (HTTP), 4317 (OTLP gRPC), 4318 (OTLP HTTP), 9095 (gRPC)
+EXPOSE 3200 4317 4318 9095
 WORKDIR /var/tempo
